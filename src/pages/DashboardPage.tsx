@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { CalendarCheck, Car, TrendingUp, Users, Clock, CalendarDays } from "lucide-react";
+import { CalendarCheck, Car, TrendingUp, Users, Clock, CalendarDays, Receipt } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import PageLayout from "@/components/PageLayout";
@@ -10,6 +10,7 @@ const DashboardPage = () => {
   const [citasHoy, setCitasHoy] = useState(0);
   const [enTaller, setEnTaller] = useState(0);
   const [facturacionMes, setFacturacionMes] = useState(0);
+  const [ivaEstimado, setIvaEstimado] = useState(0);
   const [totalClientes, setTotalClientes] = useState(0);
   const [citasRecientes, setCitasRecientes] = useState<Cita[]>([]);
   const [citasProximas, setCitasProximas] = useState<Cita[]>([]);
@@ -40,6 +41,11 @@ const DashboardPage = () => {
           .gte("fecha", inicioMes);
         const total = (citasListas ?? []).reduce((sum, c) => sum + Number(c.precio_final ?? 0), 0);
         setFacturacionMes(total);
+        const iva = (citasListas ?? []).reduce((sum, c) => {
+          const t = Number(c.precio_final ?? 0);
+          return sum + (t - t / 1.21);
+        }, 0);
+        setIvaEstimado(iva);
 
         const { count: countClientes } = await supabase
           .from("clientes")
@@ -82,10 +88,11 @@ const DashboardPage = () => {
 
   return (
     <PageLayout title="Inicio">
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-5 mb-8">
         <StatCard title="Citas Hoy"           value={String(citasHoy)}                 icon={CalendarCheck} accentColor />
         <StatCard title="Vehículos en Taller" value={String(enTaller)}                 icon={Car} />
         <StatCard title="Facturación del Mes" value={`${facturacionMes.toFixed(2)} €`} icon={TrendingUp} />
+        <StatCard title="IVA Estimado"        value={`${ivaEstimado.toFixed(2)} €`}    icon={Receipt} />
         <StatCard title="Total Clientes"      value={String(totalClientes)}            icon={Users} />
       </div>
 
