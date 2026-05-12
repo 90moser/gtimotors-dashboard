@@ -33,11 +33,12 @@ const DashboardPage = () => {
           .in("estado", ["espera", "lavando"]);
         setEnTaller(countTaller ?? 0);
 
-        const { data: facturas } = await supabase
-          .from("facturas")
-          .select("total")
-          .gte("fecha_emision", inicioMes);
-        const total = (facturas ?? []).reduce((sum, f) => sum + Number(f.total), 0);
+        const { data: citasListas } = await supabase
+          .from("citas")
+          .select("precio_final")
+          .eq("estado", "listo")
+          .gte("fecha", inicioMes);
+        const total = (citasListas ?? []).reduce((sum, c) => sum + Number(c.precio_final ?? 0), 0);
         setFacturacionMes(total);
 
         const { count: countClientes } = await supabase
