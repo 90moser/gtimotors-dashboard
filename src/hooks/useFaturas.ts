@@ -48,9 +48,9 @@ export function useFaturas() {
       .eq('id', citaId)
       .single();
 
-    const base = parseFloat(Number(cita?.precio_final ?? 0).toFixed(2));
-    const iva = parseFloat((base * 0.21).toFixed(2));
-    const total = parseFloat((base + iva).toFixed(2));
+    const total = parseFloat(Number(cita?.precio_final ?? 0).toFixed(2));
+    const base = parseFloat((total / 1.21).toFixed(2));
+    const iva  = parseFloat((total - base).toFixed(2));
 
     const year = new Date().getFullYear();
     const { data: lastFactura } = await supabase
