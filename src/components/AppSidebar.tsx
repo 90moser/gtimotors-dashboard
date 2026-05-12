@@ -1,4 +1,4 @@
-import { useLocation, Link } from "react-router-dom";
+import { useLocation, Link, useNavigate } from "react-router-dom";
 import {
   LayoutDashboard,
   CalendarDays,
@@ -9,19 +9,36 @@ import {
   LogOut,
 } from "lucide-react";
 import GTILogo from "@/components/GTILogo";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const navItems = [
-  { title: "Inicio", path: "/dashboard", icon: LayoutDashboard },
-  { title: "Agenda", path: "/dashboard/agenda", icon: CalendarDays },
-  { title: "Vehículos", path: "/dashboard/vehiculos", icon: Car },
-  { title: "Facturación", path: "/dashboard/facturacion", icon: FileText },
-  { title: "Finanzas", path: "/dashboard/finanzas", icon: BarChart3 },
+  { title: "Inicio",        path: "/dashboard",               icon: LayoutDashboard },
+  { title: "Agenda",        path: "/dashboard/agenda",        icon: CalendarDays },
+  { title: "Vehículos",     path: "/dashboard/vehiculos",     icon: Car },
+  { title: "Facturación",   path: "/dashboard/facturacion",   icon: FileText },
+  { title: "Finanzas",      path: "/dashboard/finanzas",      icon: BarChart3 },
   { title: "Configuración", path: "/dashboard/configuracion", icon: Settings },
 ];
 
 const AppSidebar = () => {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, signOut } = useAuth();
+
+  const userEmail = user?.email ?? "";
+  const initials = userEmail ? userEmail.substring(0, 2).toUpperCase() : "GT";
+
+  const handleSignOut = async () => {
+    try {
+      await signOut();
+      navigate("/");
+      toast.success("Sesión cerrada correctamente");
+    } catch {
+      toast.error("Error al cerrar sesión");
+    }
+  };
 
   return (
     <aside className="hidden md:flex flex-col w-[260px] min-h-screen bg-surface border-r border-border flex-shrink-0">
@@ -30,20 +47,24 @@ const AppSidebar = () => {
         <GTILogo size="sm" />
       </div>
 
-      {/* User */}
+      {/* Usuario autenticado */}
       <div className="px-5 py-4 flex items-center gap-3">
-        <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm">
-          JD
+        <div className="w-9 h-9 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+          {initials}
         </div>
-        <div>
-          <p className="text-foreground text-sm font-semibold leading-tight">Juan Delgado</p>
-          <p className="text-muted-foreground text-xs">Administrador</p>
+        <div className="min-w-0">
+          <p className="text-foreground text-sm font-semibold leading-tight truncate">
+            GTIMotors
+          </p>
+          <p className="text-muted-foreground text-xs truncate">
+            {userEmail || "Administrador"}
+          </p>
         </div>
       </div>
 
       <div className="mx-5 h-px bg-border" />
 
-      {/* Navigation */}
+      {/* Navegación */}
       <nav className="flex-1 px-3 py-4 space-y-1">
         {navItems.map((item) => {
           const isActive = location.pathname === item.path;
@@ -70,13 +91,13 @@ const AppSidebar = () => {
 
       {/* Logout */}
       <div className="px-3 pb-6">
-        <Link
-          to="/"
-          className="flex items-center gap-3 h-11 px-3 rounded-lg text-sm text-[#555555] hover:text-muted-foreground transition-colors"
+        <button
+          onClick={handleSignOut}
+          className="w-full flex items-center gap-3 h-11 px-3 rounded-lg text-sm text-[#555555] hover:text-muted-foreground hover:bg-muted/20 transition-colors"
         >
           <LogOut className="h-[18px] w-[18px]" />
           <span>Cerrar sesión</span>
-        </Link>
+        </button>
       </div>
     </aside>
   );
