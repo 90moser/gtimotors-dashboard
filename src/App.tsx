@@ -9,6 +9,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import LoginPage from "./pages/LoginPage";
 import DashboardPage from "./pages/DashboardPage";
 import AgendaPage from "./pages/AgendaPage";
+import ClientesPage from "./pages/ClientesPage";
 import VehiculosPage from "./pages/VehiculosPage";
 import FacturacionPage from "./pages/FacturacionPage";
 import FinanzasPage from "./pages/FinanzasPage";
@@ -47,6 +48,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <AgendaPage />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/dashboard/clientes"
+              element={
+                <ProtectedRoute>
+                  <ClientesPage />
                 </ProtectedRoute>
               }
             />
