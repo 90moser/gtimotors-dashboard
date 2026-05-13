@@ -26,15 +26,15 @@ const VehiculosPage = () => {
     setVehiculos([]);
 
     try {
-      const { data: veh } = await supabase
+      const { data: vehs } = await supabase
         .from("vehiculos")
         .select("*, clientes(*)")
-        .ilike("matricula", matricula.trim())
-        .limit(1)
-        .single();
+        .ilike("matricula", `%${matricula.trim()}%`)
+        .limit(1);
+
+      const veh = vehs?.[0] ?? null;
 
       if (!veh) {
-        toast.error("No se encontró ningún vehículo con esa matrícula");
         setBuscado(true);
         return;
       }
