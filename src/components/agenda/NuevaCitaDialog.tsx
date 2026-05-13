@@ -18,6 +18,7 @@ interface Props {
   open: boolean;
   onClose: () => void;
   fechaDefault: string;
+  telefonoInicial?: string;
 }
 
 const TIPO_OPTIONS: { value: TipoVehiculo; label: string }[] = [
@@ -39,7 +40,7 @@ const getDefaultHora = () => {
   return now.toTimeString().slice(0, 5);
 };
 
-const NuevaCitaDialog = ({ open, onClose, fechaDefault }: Props) => {
+const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props) => {
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [submitting, setSubmitting] = useState(false);
@@ -68,32 +69,13 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault }: Props) => {
   const [hora, setHora] = useState(getDefaultHora());
   const [notas, setNotas] = useState('');
 
-  useEffect(() => {
-    if (!open) return;
-    // Reset al abrir
-    setClienteEncontrado(undefined);
-    setVehiculosExistentes([]);
-    setTelefono(''); setNombre(''); setApellidos(''); setEmail('');
-    setVehiculoId('nuevo'); setMatricula(''); setMarca('');
-    setModelo(''); setTipo('turismo'); setColor('');
-    setServicioId(''); setFecha(fechaDefault); setHora(getDefaultHora()); setNotas('');
-
-    supabase
-      .from('servicios')
-      .select('*')
-      .eq('activo', true)
-      .order('nombre')
-      .then(({ data }) => setServicios((data as Servicio[]) ?? []));
-  }, [open, fechaDefault]);
-
-  const buscarCliente = async () => {
-    if (!telefono.trim()) { toast.error('Introduce un teléfono para buscar'); return; }
+  const buscarClientePorTelefono = async (tel: string) => {
     setBuscando(true);
     try {
       const { data } = await supabase
         .from('clientes')
         .select('*')
-        .eq('telefono', telefono.trim())
+        .eq('telefono', tel.trim())
         .maybeSingle();
 
       if (data) {
@@ -130,6 +112,35 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault }: Props) => {
     }
   };
 
+  useEffect(() => {
+    if (!open) return;
+    // Reset al abrir
+    setClienteEncontrado(undefined);
+    setVehiculosExistentes([]);
+    setTelefono(''); setNombre(''); setApellidos(''); setEmail('');
+    setVehiculoId('nuevo'); setMatricula(''); setMarca('');
+    setModelo(''); setTipo('turismo'); setColor('');
+    setServicioId(''); setFecha(fechaDefault); setHora(getDefaultHora()); setNotas('');
+
+    supabase
+      .from('servicios')
+      .select('*')
+      .eq('activo', true)
+      .order('nombre')
+      .then(({ data }) => setServicios((data as Servicio[]) ?? []));
+
+    if (telefonoInicial) {
+      setTelefono(telefonoInicial);
+      buscarClientePorTelefono(telefonoInicial);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, fechaDefault, telefonoInicial]);
+
+  const buscarCliente = async () => {
+    if (!telefono.trim()) { toast.error('Introduce un teléfono para buscar'); return; }
+    await buscarClientePorTelefono(telefono);
+  };
+
   const handleVehicleSelect = (id: string) => {
     setVehiculoId(id);
     if (id === 'nuevo') {
@@ -152,6 +163,11 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault }: Props) => {
   const handleSubmit = async () => {
     if (!telefono || !nombre || !apellidos || !matricula || !marca || !modelo || !servicioId || !fecha || !hora) {
       toast.error('Completa todos los campos obligatorios');
+      return;
+    }
+    const telefonoValido = /^[679]\d{8}$/.test(telefono.replace(/\s/g, ''));
+    if (!telefonoValido) {
+      toast.error('Introduce un teléfono español válido (9 dígitos)');
       return;
     }
     setSubmitting(true);

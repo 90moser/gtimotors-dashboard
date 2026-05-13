@@ -7,6 +7,7 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  Users,
 } from "lucide-react";
 import GTILogo from "@/components/GTILogo";
 import { useAuth } from "@/contexts/AuthContext";
@@ -16,6 +17,7 @@ import { toast } from "sonner";
 const navItems = [
   { title: "Inicio",        path: "/dashboard",               icon: LayoutDashboard },
   { title: "Agenda",        path: "/dashboard/agenda",        icon: CalendarDays },
+  { title: "Clientes",      path: "/dashboard/clientes",      icon: Users },
   { title: "Vehículos",     path: "/dashboard/vehiculos",     icon: Car },
   { title: "Facturación",   path: "/dashboard/facturacion",   icon: FileText },
   { title: "Finanzas",      path: "/dashboard/finanzas",      icon: BarChart3 },
