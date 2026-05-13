@@ -22,7 +22,12 @@ const navItems = [
   { title: "Configuración", path: "/dashboard/configuracion", icon: Settings },
 ];
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+  mobile?: boolean;
+  onClose?: () => void;
+}
+
+const AppSidebar = ({ mobile = false, onClose }: AppSidebarProps) => {
   const location = useLocation();
   const navigate = useNavigate();
   const { user, signOut } = useAuth();
@@ -41,11 +46,19 @@ const AppSidebar = () => {
   };
 
   return (
-    <aside className="hidden md:flex flex-col w-[260px] min-h-screen bg-surface border-r border-border flex-shrink-0">
-      {/* Logo */}
-      <div className="h-16 flex items-center px-5">
-        <GTILogo size="sm" />
-      </div>
+    <aside
+      className={
+        mobile
+          ? "flex flex-col w-full min-h-screen bg-surface"
+          : "hidden md:flex flex-col w-[260px] min-h-screen bg-surface border-r border-border flex-shrink-0"
+      }
+    >
+      {/* Logo — only shown in desktop mode; mobile header is rendered by PageLayout */}
+      {!mobile && (
+        <div className="h-16 flex items-center px-5">
+          <GTILogo size="sm" />
+        </div>
+      )}
 
       {/* Usuario autenticado */}
       <div className="px-5 py-4 flex items-center gap-3">
@@ -72,6 +85,7 @@ const AppSidebar = () => {
             <Link
               key={item.path}
               to={item.path}
+              onClick={mobile ? onClose : undefined}
               className={cn(
                 "flex items-center gap-3 h-11 px-3 rounded-lg text-sm font-medium transition-colors relative",
                 isActive
