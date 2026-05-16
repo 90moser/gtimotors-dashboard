@@ -165,10 +165,12 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
       toast.error('Completa todos los campos obligatorios');
       return;
     }
-    const telefonoValido = /^[679]\d{8}$/.test(telefono.replace(/\s/g, ''));
-    if (!telefonoValido) {
-      toast.error('Introduce un teléfono español válido (9 dígitos)');
-      return;
+    if (!clienteEncontrado) {
+      const telefonoValido = /^[679]\d{8}$/.test(telefono.replace(/\s/g, ''));
+      if (!telefonoValido) {
+        toast.error('Introduce un teléfono español válido (9 dígitos)');
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -241,14 +243,17 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
           {/* Búsqueda de cliente */}
           <div>
             <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">
-              Cliente
+              Teléfono / WhatsApp *
             </Label>
             <div className="flex gap-2">
               <Input
-                placeholder="Ej: 612345678 — pulsa Enter o 🔍 para buscar"
+                type="tel"
+                inputMode="numeric"
+                placeholder="Ej: 612345678"
                 value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
+                onChange={(e) => setTelefono(e.target.value.replace(/\D/g, ''))}
                 onKeyDown={(e) => e.key === 'Enter' && buscarCliente()}
+                maxLength={9}
               />
               <Button variant="outline" onClick={buscarCliente} disabled={buscando} className="gap-2 px-4">
                 {buscando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
@@ -283,6 +288,12 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
                   <Label className="text-xs mb-1 block">Apellidos *</Label>
                   <Input value={apellidos} onChange={(e) => setApellidos(e.target.value)} disabled={!!clienteEncontrado} />
                 </div>
+                {clienteEncontrado && (
+                  <div className="col-span-2">
+                    <Label className="text-xs mb-1 block">Teléfono</Label>
+                    <Input value={clienteEncontrado.telefono} disabled />
+                  </div>
+                )}
                 {isNuevoCliente && (
                   <div className="col-span-2">
                     <Label className="text-xs mb-1 block">Email</Label>
