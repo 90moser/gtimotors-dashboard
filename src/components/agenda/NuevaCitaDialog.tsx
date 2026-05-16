@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Loader2, Search, User, UserPlus } from 'lucide-react';
 import { supabase, type Cliente, type Vehiculo, type Servicio, type TipoVehiculo } from '@/lib/supabaseClient';
 import {
-  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -165,10 +165,12 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
       toast.error('Completa todos los campos obligatorios');
       return;
     }
-    const telefonoValido = /^[679]\d{8}$/.test(telefono.replace(/\s/g, ''));
-    if (!telefonoValido) {
-      toast.error('Introduce un teléfono español válido (9 dígitos)');
-      return;
+    if (!clienteEncontrado) {
+      const telefonoValido = /^[679]\d{8}$/.test(telefono.replace(/\s/g, ''));
+      if (!telefonoValido) {
+        toast.error('Introduce un teléfono español válido (9 dígitos)');
+        return;
+      }
     }
     setSubmitting(true);
     try {
@@ -227,28 +229,42 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
 
   return (
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
+      <DialogContent className="max-w-lg h-[90vh] flex flex-col p-0 gap-0">
+
+        {/* Fixed header */}
+        <DialogHeader className="px-6 pt-6 pb-4 border-b border-border flex-shrink-0">
           <DialogTitle>Nueva Cita</DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-5 py-2">
+        {/* Scrollable content */}
+        <div className="flex-1 overflow-y-auto px-6 py-4">
+          <div className="space-y-5">
+
           {/* Búsqueda de cliente */}
           <div>
             <Label className="text-xs text-muted-foreground uppercase tracking-wider mb-3 block">
-              Cliente
+              Teléfono / WhatsApp *
             </Label>
             <div className="flex gap-2">
               <Input
-                placeholder="Teléfono del cliente"
+                type="tel"
+                inputMode="numeric"
+                placeholder="Ej: 612345678"
                 value={telefono}
-                onChange={(e) => setTelefono(e.target.value)}
+                onChange={(e) => setTelefono(e.target.value.replace(/\D/g, ''))}
                 onKeyDown={(e) => e.key === 'Enter' && buscarCliente()}
+                maxLength={9}
               />
-              <Button variant="outline" size="icon" onClick={buscarCliente} disabled={buscando}>
+              <Button variant="outline" onClick={buscarCliente} disabled={buscando} className="gap-2 px-4">
                 {buscando ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                <span className="hidden sm:inline">Buscar</span>
               </Button>
             </div>
+            {!searched && (
+              <p className="text-xs text-muted-foreground mt-1.5">
+                Introduce el teléfono y pulsa Enter o el botón de búsqueda
+              </p>
+            )}
 
             {searched && (
               <div className={`mt-2 px-3 py-2 rounded-lg text-sm flex items-center gap-2 ${
@@ -272,6 +288,12 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
                   <Label className="text-xs mb-1 block">Apellidos *</Label>
                   <Input value={apellidos} onChange={(e) => setApellidos(e.target.value)} disabled={!!clienteEncontrado} />
                 </div>
+                {clienteEncontrado && (
+                  <div className="col-span-2">
+                    <Label className="text-xs mb-1 block">Teléfono</Label>
+                    <Input value={clienteEncontrado.telefono} disabled />
+                  </div>
+                )}
                 {isNuevoCliente && (
                   <div className="col-span-2">
                     <Label className="text-xs mb-1 block">Email</Label>
@@ -399,9 +421,11 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
               </div>
             </>
           )}
+          </div>
         </div>
 
-        <DialogFooter>
+        {/* Fixed footer */}
+        <div className="flex-shrink-0 border-t border-border px-6 py-4 flex justify-end gap-3 bg-background">
           <Button variant="outline" onClick={onClose}>Cancelar</Button>
           {searched && (
             <Button onClick={handleSubmit} disabled={submitting}>
@@ -410,7 +434,8 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
                 : 'Crear cita'}
             </Button>
           )}
-        </DialogFooter>
+        </div>
+
       </DialogContent>
     </Dialog>
   );
