@@ -54,6 +54,10 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
   const [nombre, setNombre] = useState('');
   const [apellidos, setApellidos] = useState('');
   const [email, setEmail] = useState('');
+  const [nif, setNif] = useState('');
+  const [direccion, setDireccion] = useState('');
+  const [ciudad, setCiudad] = useState('');
+  const [codigoPostal, setCodigoPostal] = useState('');
 
   // Campos de vehículo
   const [vehiculoId, setVehiculoId] = useState('nuevo');
@@ -118,6 +122,7 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
     setClienteEncontrado(undefined);
     setVehiculosExistentes([]);
     setTelefono(''); setNombre(''); setApellidos(''); setEmail('');
+    setNif(''); setDireccion(''); setCiudad(''); setCodigoPostal('');
     setVehiculoId('nuevo'); setMatricula(''); setMarca('');
     setModelo(''); setTipo('turismo'); setColor('');
     setServicioId(''); setFecha(fechaDefault); setHora(getDefaultHora()); setNotas('');
@@ -179,7 +184,15 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
       if (!clienteId) {
         const { data, error } = await supabase
           .from('clientes')
-          .insert({ nombre, apellidos, telefono: telefono.trim(), email: email || null })
+          .insert({
+              nombre, apellidos,
+              telefono: telefono.trim(),
+              email: email || null,
+              nif: nif || null,
+              direccion: direccion || null,
+              ciudad: ciudad || null,
+              codigo_postal: codigoPostal || null,
+            })
           .select()
           .single();
         if (error) throw error;
@@ -295,10 +308,28 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
                   </div>
                 )}
                 {isNuevoCliente && (
-                  <div className="col-span-2">
-                    <Label className="text-xs mb-1 block">Email</Label>
-                    <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="opcional" />
-                  </div>
+                  <>
+                    <div className="col-span-2">
+                      <Label className="text-xs mb-1 block">Email</Label>
+                      <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="opcional" />
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs mb-1 block">NIF / CIF</Label>
+                      <Input value={nif} onChange={(e) => setNif(e.target.value)} placeholder="12345678A (opcional)" />
+                    </div>
+                    <div className="col-span-2">
+                      <Label className="text-xs mb-1 block">Dirección</Label>
+                      <Input value={direccion} onChange={(e) => setDireccion(e.target.value)} placeholder="Calle, número (opcional)" />
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1 block">Código Postal</Label>
+                      <Input value={codigoPostal} onChange={(e) => setCodigoPostal(e.target.value)} placeholder="36205" />
+                    </div>
+                    <div>
+                      <Label className="text-xs mb-1 block">Ciudad</Label>
+                      <Input value={ciudad} onChange={(e) => setCiudad(e.target.value)} placeholder="Vigo" />
+                    </div>
+                  </>
                 )}
               </div>
             )}

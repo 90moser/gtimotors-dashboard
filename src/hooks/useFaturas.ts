@@ -54,7 +54,12 @@ function drawPDFHeader(doc: jsPDF, factura: Factura) {
   if (cliente) {
     let lineY = 73;
     doc.text(`${cliente.nombre} ${cliente.apellidos}`, 14, lineY);
-    if (cliente.nif)   { lineY += 6; doc.text(`NIF/CIF: ${cliente.nif}`, 14, lineY); }
+    if (cliente.nif) { lineY += 6; doc.text(`NIF/CIF: ${cliente.nif}`, 14, lineY); }
+    if (cliente.direccion) { lineY += 6; doc.text(cliente.direccion, 14, lineY); }
+    if (cliente.codigo_postal || cliente.ciudad) {
+      lineY += 6;
+      doc.text(`${cliente.codigo_postal ?? ''} ${cliente.ciudad ?? ''}`.trim(), 14, lineY);
+    }
     lineY += 6; doc.text(`Tel: ${cliente.telefono}`, 14, lineY);
     if (cliente.email) { lineY += 6; doc.text(`Email: ${cliente.email}`, 14, lineY); }
   }
