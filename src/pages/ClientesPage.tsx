@@ -1,13 +1,19 @@
 import { useEffect, useState, useCallback } from "react";
 import {
-  Search, Users, ChevronDown, ChevronUp, Plus, Car, Clock, Loader2,
+  Search, Users, ChevronDown, ChevronUp, Plus, Car, Clock, Loader2, Pencil,
 } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import PageLayout from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter,
+} from "@/components/ui/dialog";
 import NuevaCitaDialog from "@/components/agenda/NuevaCitaDialog";
 import { supabase, type Cliente } from "@/lib/supabaseClient";
+import { toast } from "sonner";
 
 const WhatsAppIcon = () => (
   <svg viewBox="0 0 24 24" className="h-3.5 w-3.5 fill-current" xmlns="http://www.w3.org/2000/svg">
@@ -44,6 +50,19 @@ const ClientesPage = () => {
   const [search, setSearch] = useState("");
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [nuevaCitaPhone, setNuevaCitaPhone] = useState<string | null>(null);
+
+  // Edit dialog
+  const [editCliente, setEditCliente] = useState<Cliente | null>(null);
+  const [editNombre, setEditNombre] = useState("");
+  const [editApellidos, setEditApellidos] = useState("");
+  const [editTelefono, setEditTelefono] = useState("");
+  const [editEmail, setEditEmail] = useState("");
+  const [editNif, setEditNif] = useState("");
+  const [editDireccion, setEditDireccion] = useState("");
+  const [editCiudad, setEditCiudad] = useState("");
+  const [editCodigoPostal, setEditCodigoPostal] = useState("");
+  const [editNotas, setEditNotas] = useState("");
+  const [saving, setSaving] = useState(false);
 
   const hoy = format(new Date(), "yyyy-MM-dd");
 
@@ -98,6 +117,53 @@ const ClientesPage = () => {
         map.get(key)!.citas.push(c);
       });
     return Array.from(map.values());
+  };
+
+  const openEdit = (cliente: Cliente) => {
+    setEditCliente(cliente);
+    setEditNombre(cliente.nombre);
+    setEditApellidos(cliente.apellidos);
+    setEditTelefono(cliente.telefono);
+    setEditEmail(cliente.email ?? "");
+    setEditNif(cliente.nif ?? "");
+    setEditDireccion(cliente.direccion ?? "");
+    setEditCiudad(cliente.ciudad ?? "");
+    setEditCodigoPostal(cliente.codigo_postal ?? "");
+    setEditNotas(cliente.notas ?? "");
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editCliente) return;
+    if (!editNombre.trim() || !editApellidos.trim() || !editTelefono.trim()) {
+      toast.error("Nombre, apellidos y teléfono son obligatorios");
+      return;
+    }
+    setSaving(true);
+    try {
+      const { error } = await supabase
+        .from("clientes")
+        .update({
+          nombre: editNombre.trim(),
+          apellidos: editApellidos.trim(),
+          telefono: editTelefono.trim(),
+          email: editEmail || null,
+          nif: editNif || null,
+          direccion: editDireccion || null,
+          ciudad: editCiudad || null,
+          codigo_postal: editCodigoPostal || null,
+          notas: editNotas || null,
+        })
+        .eq("id", editCliente.id);
+
+      if (error) throw error;
+      toast.success("Cliente actualizado correctamente");
+      setEditCliente(null);
+      await fetchClientes(search);
+    } catch {
+      toast.error("Error al guardar los cambios");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
@@ -177,6 +243,15 @@ const ClientesPage = () => {
                   <div className="flex items-center gap-2 flex-shrink-0">
                     <Button
                       size="sm"
+                      variant="ghost"
+                      onClick={() => openEdit(cliente)}
+                      className="gap-1.5 hidden sm:flex text-muted-foreground hover:text-foreground"
+                      title="Editar cliente"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="sm"
                       variant="outline"
                       onClick={() => setExpandedId(isExpanded ? null : cliente.id)}
                       className="gap-1.5 hidden sm:flex"
@@ -205,15 +280,25 @@ const ClientesPage = () => {
                       {totalGastado.toFixed(2)} €
                     </span>
                   </div>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setExpandedId(isExpanded ? null : cliente.id)}
-                    className="gap-1.5"
-                  >
-                    {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
-                    Historial
-                  </Button>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      onClick={() => openEdit(cliente)}
+                      className="text-muted-foreground"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => setExpandedId(isExpanded ? null : cliente.id)}
+                      className="gap-1.5"
+                    >
+                      {isExpanded ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+                      Historial
+                    </Button>
+                  </div>
                 </div>
 
                 {/* Expanded historial */}
@@ -267,6 +352,7 @@ const ClientesPage = () => {
         </div>
       )}
 
+      {/* Nueva Cita Dialog */}
       {nuevaCitaPhone !== null && (
         <NuevaCitaDialog
           open
@@ -275,6 +361,68 @@ const ClientesPage = () => {
           telefonoInicial={nuevaCitaPhone}
         />
       )}
+
+      {/* Edit Cliente Dialog */}
+      <Dialog open={!!editCliente} onOpenChange={(o) => !o && setEditCliente(null)}>
+        <DialogContent className="sm:max-w-lg max-h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-4 flex-shrink-0 border-b border-border">
+            <DialogTitle className="flex items-center gap-2">
+              <Pencil className="h-4 w-4 text-primary" />
+              Editar cliente
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-xs mb-1 block">Nombre *</Label>
+                <Input value={editNombre} onChange={(e) => setEditNombre(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs mb-1 block">Apellidos *</Label>
+                <Input value={editApellidos} onChange={(e) => setEditApellidos(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs mb-1 block">Teléfono *</Label>
+                <Input value={editTelefono} onChange={(e) => setEditTelefono(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-xs mb-1 block">Email</Label>
+                <Input type="email" value={editEmail} onChange={(e) => setEditEmail(e.target.value)} placeholder="opcional" />
+              </div>
+              <div className="col-span-2">
+                <Label className="text-xs mb-1 block">NIF / CIF</Label>
+                <Input value={editNif} onChange={(e) => setEditNif(e.target.value)} placeholder="12345678A (opcional)" />
+              </div>
+              <div className="col-span-2">
+                <Label className="text-xs mb-1 block">Dirección</Label>
+                <Input value={editDireccion} onChange={(e) => setEditDireccion(e.target.value)} placeholder="Calle, número (opcional)" />
+              </div>
+              <div>
+                <Label className="text-xs mb-1 block">Código Postal</Label>
+                <Input value={editCodigoPostal} onChange={(e) => setEditCodigoPostal(e.target.value)} placeholder="36205" />
+              </div>
+              <div>
+                <Label className="text-xs mb-1 block">Ciudad</Label>
+                <Input value={editCiudad} onChange={(e) => setEditCiudad(e.target.value)} placeholder="Vigo" />
+              </div>
+              <div className="col-span-2">
+                <Label className="text-xs mb-1 block">Notas internas</Label>
+                <Input value={editNotas} onChange={(e) => setEditNotas(e.target.value)} placeholder="Observaciones opcionales" />
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="flex-shrink-0 border-t border-border px-6 py-4 bg-background">
+            <Button variant="outline" onClick={() => setEditCliente(null)} disabled={saving}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSaveEdit} disabled={saving} className="gap-2">
+              {saving ? <><Loader2 className="h-4 w-4 animate-spin" />Guardando...</> : "Guardar cambios"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </PageLayout>
   );
 };
