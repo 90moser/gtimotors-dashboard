@@ -33,6 +33,9 @@ export interface Cliente {
   telefono: string;
   email?: string;
   nif?: string;
+  direccion?: string;
+  ciudad?: string;
+  codigo_postal?: string;
   notas?: string;
   created_at: string;
 }
