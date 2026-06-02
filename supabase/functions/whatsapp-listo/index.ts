@@ -12,7 +12,9 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: 'Faltan parámetros' }), { status: 400 });
     }
 
-    const to = `whatsapp:+34${String(telefono).replace(/\D/g, '')}`;
+    const toClean = String(telefono).replace(/\D/g, '');
+    const toNumber = toClean.startsWith('34') ? toClean : `34${toClean}`;
+    const to = `whatsapp:+${toNumber}`;
     const body =
       `🚗 *Tu vehículo está listo — GTIMotors*\n\n` +
       `Hola ${nombre} 👋\n\n` +
