@@ -6,6 +6,7 @@ import {
 } from 'lucide-react';
 import PageLayout from '@/components/PageLayout';
 import { useCitas } from '@/hooks/useCitas';
+import { useWhatsApp } from '@/hooks/useWhatsApp';
 import NuevaCitaDialog from '@/components/agenda/NuevaCitaDialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -34,7 +35,7 @@ const NEXT_ESTADO: Partial<Record<EstadoCita, { estado: EstadoCita; label: strin
 
 interface CitaCardProps {
   cita: Cita;
-  onEstadoChange: (id: string, estado: EstadoCita) => Promise<void>;
+  onEstadoChange: (id: string, estado: EstadoCita, cita: Cita) => Promise<void>;
   onCancel: (id: string) => void;
 }
 
@@ -47,7 +48,7 @@ const CitaCard = ({ cita, onEstadoChange, onCancel }: CitaCardProps) => {
     if (!next) return;
     setUpdating(true);
     try {
-      await onEstadoChange(cita.id, next.estado);
+      await onEstadoChange(cita.id, next.estado, cita);
     } catch {
       toast.error('Error al actualizar el estado');
     } finally {
@@ -136,12 +137,20 @@ const AgendaPage = () => {
   const [dialogOpen, setDialogOpen] = useState(false);
   const fechaStr = format(fecha, 'yyyy-MM-dd');
   const { citas, loading, updateEstado } = useCitas(fechaStr);
+  const { sendVehiculoListo } = useWhatsApp();
 
   const counts = {
     espera:    citas.filter((c) => c.estado === 'espera').length,
     lavando:   citas.filter((c) => c.estado === 'lavando').length,
     listo:     citas.filter((c) => c.estado === 'listo').length,
     cancelado: citas.filter((c) => c.estado === 'cancelado').length,
+  };
+
+  const handleEstadoChange = async (id: string, estado: EstadoCita, cita: Cita) => {
+    await updateEstado(id, estado);
+    if (estado === 'listo') {
+      sendVehiculoListo(cita);
+    }
   };
 
   const handleCancel = async (id: string) => {
@@ -224,7 +233,7 @@ const AgendaPage = () => {
             <CitaCard
               key={cita.id}
               cita={cita}
-              onEstadoChange={updateEstado}
+              onEstadoChange={handleEstadoChange}
               onCancel={handleCancel}
             />
           ))}

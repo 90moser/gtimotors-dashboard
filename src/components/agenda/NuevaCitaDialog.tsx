@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { Loader2, Search, User, UserPlus } from 'lucide-react';
-import { supabase, type Cliente, type Vehiculo, type Servicio, type TipoVehiculo } from '@/lib/supabaseClient';
+import { supabase, type Cliente, type Cita, type Vehiculo, type Servicio, type TipoVehiculo } from '@/lib/supabaseClient';
+import { useWhatsApp } from '@/hooks/useWhatsApp';
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from '@/components/ui/dialog';
@@ -44,6 +45,7 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [buscando, setBuscando] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const { sendConfirmacion } = useWhatsApp();
 
   // undefined = aún no buscado, null = no encontrado, Cliente = encontrado
   const [clienteEncontrado, setClienteEncontrado] = useState<Cliente | null | undefined>(undefined);
@@ -248,7 +250,7 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
         vehiculoFinalId = data.id;
       }
 
-      const { error } = await supabase.from('citas').insert({
+      const { data: citaData, error } = await supabase.from('citas').insert({
         cliente_id: clienteId,
         vehiculo_id: vehiculoFinalId,
         servicio_id: servicioId,
@@ -258,8 +260,10 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
         notas: isOtros
           ? `[Otros] ${otrosDescripcion}${notas ? ' — ' + notas : ''}`
           : notas || null,
-      });
+      }).select('*, clientes(*), vehiculos(*), servicios(*)').single();
       if (error) throw error;
+
+      sendConfirmacion(citaData as Cita);
 
       toast.success('Cita creada correctamente');
       onClose();
