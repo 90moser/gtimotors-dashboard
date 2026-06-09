@@ -33,8 +33,6 @@ serve(async (req) => {
 
     const toClean = String(cliente.telefono).replace(/\D/g, '');
     const toNumber = toClean.startsWith('34') ? toClean : `34${toClean}`;
-    const matricula = cita.vehiculos?.matricula ?? cita.matricula ?? 'Tu vehículo';
-
     const resp = await fetch(twilioUrl, {
       method: 'POST',
       headers: {
@@ -47,7 +45,7 @@ serve(async (req) => {
         ContentSid: 'HXe0c5d86bf5d076c0c9964b47a2de760b',
         ContentVariables: JSON.stringify({
           "1": cliente.nombre,
-          "2": matricula,
+          "2": cita.vehiculos?.matricula ?? '',
         }),
       }).toString(),
     });

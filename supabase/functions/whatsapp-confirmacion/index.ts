@@ -87,10 +87,10 @@ serve(async (req) => {
       'HXc1bb5aab4dceb12979320cb4da746939',
       {
         "1": cliente.nombre,
-        "2": hora,
+        "2": cita.vehiculos?.matricula ?? '',
         "3": servicio.nombre,
-        "4": fecha,
-        "5": hora,
+        "4": new Date(cita.fecha + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }),
+        "5": String(cita.hora).substring(0, 5),
       }
     );
 
