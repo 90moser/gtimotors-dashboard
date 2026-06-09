@@ -40,7 +40,28 @@ serve(async (req) => {
     const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${TWILIO_ACCOUNT_SID}/Messages.json`;
     const auth = btoa(`${TWILIO_ACCOUNT_SID}:${TWILIO_AUTH_TOKEN}`);
 
-    const sendWA = async (to: string, body: string) => {
+    const sendWATemplate = async (to: string, contentSid: string, contentVariables: Record<string, string>) => {
+      const toClean = String(to).replace(/\D/g, '');
+      const toNumber = toClean.startsWith('34') ? toClean : `34${toClean}`;
+      const resp = await fetch(twilioUrl, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Basic ${auth}`,
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: new URLSearchParams({
+          From: TWILIO_FROM,
+          To: `whatsapp:+${toNumber}`,
+          ContentSid: contentSid,
+          ContentVariables: JSON.stringify(contentVariables),
+        }).toString(),
+      });
+      const result = await resp.json();
+      console.log('Twilio response:', JSON.stringify(result));
+      return result;
+    };
+
+    const sendWABody = async (to: string, body: string) => {
       const toClean = String(to).replace(/\D/g, '');
       const toNumber = toClean.startsWith('34') ? toClean : `34${toClean}`;
       const resp = await fetch(twilioUrl, {
@@ -60,21 +81,21 @@ serve(async (req) => {
       return result;
     };
 
-    // Mensagem ao cliente
-    await sendWA(
+    // Mensagem ao cliente — template aprovado
+    await sendWATemplate(
       cliente.telefono,
-      `¡Hola ${cliente.nombre}! 👋\n\n` +
-      `Tu cita en *GTIMotors* ha sido confirmada ✅\n\n` +
-      `📅 *Fecha:* ${fecha}\n` +
-      `⏰ *Hora:* ${hora}\n` +
-      `🔧 *Servicio:* ${servicio.nombre}\n\n` +
-      `📍 Travesia de Vigo 105 Bajo, Vigo\n\n` +
-      `Si necesitas cambiar o cancelar, escríbenos aquí.\n` +
-      `_GTIMotors — Cuidado y belleza para tu vehículo_ 🚗✨`
+      'HXc1bb5aab4dceb12979320cb4da746939',
+      {
+        "1": cliente.nombre,
+        "2": hora,
+        "3": servicio.nombre,
+        "4": fecha,
+        "5": hora,
+      }
     );
 
-    // Notificação à equipa
-    await sendWA(
+    // Notificação à equipa — texto livre (conversa iniciada pelo negócio)
+    await sendWABody(
       '665058633',
       `🆕 *Nueva cita recibida*\n\n` +
       `👤 ${cliente.nombre} ${cliente.apellidos}\n` +

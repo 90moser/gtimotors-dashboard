@@ -33,6 +33,7 @@ serve(async (req) => {
 
     const toClean = String(cliente.telefono).replace(/\D/g, '');
     const toNumber = toClean.startsWith('34') ? toClean : `34${toClean}`;
+    const matricula = cita.vehiculos?.matricula ?? cita.matricula ?? 'Tu vehículo';
 
     const resp = await fetch(twilioUrl, {
       method: 'POST',
@@ -43,15 +44,11 @@ serve(async (req) => {
       body: new URLSearchParams({
         From: TWILIO_FROM,
         To: `whatsapp:+${toNumber}`,
-        Body:
-          `¡Hola ${cliente.nombre}! 🎉\n\n` +
-          `Tu vehículo está *listo para recoger* ✅\n\n` +
-          `🚗 *${cita.vehiculos?.matricula ?? 'Tu vehículo'}* — ${cita.servicios?.nombre}\n\n` +
-          `Puedes pasar cuando quieras.\n` +
-          `📍 Travesia de Vigo 105 Bajo, Vigo\n` +
-          `🕐 Lun-Vie 9:00-19:00 · Sáb 9:00-12:00\n\n` +
-          `💳 Efectivo, tarjeta y Bizum.\n\n` +
-          `_GTIMotors — Gracias por confiar en nosotros_ 🙏`,
+        ContentSid: 'HXe0c5d86bf5d076c0c9964b47a2de760b',
+        ContentVariables: JSON.stringify({
+          "1": cliente.nombre,
+          "2": matricula,
+        }),
       }).toString(),
     });
 
