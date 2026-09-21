@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GTIMotors — Teste Matrícula</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #000; color: #fff; font-family: Arial, sans-serif; min-height: 100vh; display: flex; align-items: center; justify-content: center; }
+  .container { background: #111; border: 1px solid #333; border-radius: 12px; padding: 40px; max-width: 500px; width: 90%; }
+  .logo { text-align: center; margin-bottom: 30px; }
+  .logo h1 { color: #CC0000; font-size: 28px; letter-spacing: 3px; }
+  .logo p { color: #666; font-size: 12px; margin-top: 5px; }
+  .upload-area { border: 2px dashed #333; border-radius: 8px; padding: 30px; text-align: center; cursor: pointer; margin-bottom: 20px; }
+  .upload-icon { font-size: 48px; margin-bottom: 10px; }
+  .upload-area p { color: #666; font-size: 14px; }
+  .upload-area span { color: #CC0000; font-weight: bold; }
+  #preview { max-width: 100%; border-radius: 8px; margin: 15px 0; display: none; }
+  .btn { background: #CC0000; color: #fff; border: none; padding: 15px 30px; border-radius: 8px; font-size: 16px; font-weight: bold; cursor: pointer; width: 100%; letter-spacing: 1px; }
+  .btn:disabled { background: #333; cursor: not-allowed; }
+  .resultado { background: #0a0a0a; border: 1px solid #333; border-radius: 8px; padding: 20px; margin-top: 20px; display: none; }
+  .resultado h3 { color: #CC0000; margin-bottom: 15px; font-size: 14px; letter-spacing: 2px; }
+  .matricula { font-size: 36px; font-weight: bold; color: #fff; text-align: center; letter-spacing: 5px; padding: 15px; background: #1a1a1a; border-radius: 6px; margin-bottom: 15px; }
+  .detalhes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .detalhe { background: #1a1a1a; padding: 10px; border-radius: 6px; }
+  .detalhe label { color: #666; font-size: 11px; text-transform: uppercase; display: block; margin-bottom: 4px; }
+  .detalhe span { color: #fff; font-size: 14px; font-weight: bold; }
+  .loading { text-align: center; padding: 20px; display: none; }
+  .spinner { border: 3px solid #333; border-top: 3px solid #CC0000; border-radius: 50%; width: 40px; height: 40px; animation: spin 1s linear infinite; margin: 0 auto 10px; }
+  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+  .erro { background: #1a0000; border: 1px solid #CC0000; border-radius: 8px; padding: 15px; margin-top: 20px; color: #ff6666; display: none; font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="logo">
+    <h1>GTI MOTORS</h1>
+    <p>SISTEMA DE LEITURA DE MATRÍCULAS</p>
+  </div>
+  <div class="upload-area" onclick="document.getElementById('foto').click()">
+    <input type="file" id="foto" accept="image/*" onchange="mostrarPreview(this)" style="display:none">
+    <div class="upload-icon">📷</div>
+    <p>Clica para <span>seleccionar uma foto</span></p>
+  </div>
+  <img id="preview" alt="Preview">
+  <button class="btn" id="btnAnalisar" onclick="analisarMatricula()" disabled>🔍 ANALISAR MATRÍCULA</button>
+  <div class="loading" id="loading"><div class="spinner"></div><p style="color:#666">A analisar...</p></div>
+  <div class="resultado" id="resultado">
+    <h3>✅ Matrícula Detectada</h3>
+    <div class="matricula" id="matriculaTexto">—</div>
+    <div class="detalhes">
+      <div class="detalhe"><label>Confiança</label><span id="confianca" style="color:#00cc00">—</span></div>
+      <div class="detalhe"><label>Região</label><span id="regiao">—</span></div>
+      <div class="detalhe"><label>Veículo</label><span id="veiculo">—</span></div>
+      <div class="detalhe"><label>Cor</label><span id="cor">—</span></div>
+    </div>
+  </div>
+  <div class="erro" id="erro"></div>
+</div>
+<script>
+const SUPABASE_URL = 'https://gsylncgebguoooabmyid.supabase.co'
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdzeWxuY2dlYmd1b29vYWJteWlkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc2NjE5MjQsImV4cCI6MjA2MzIzNzkyNH0.RbAO7GaRJhcZXMiVFMtAeSAUBzAJkLCWqGKPE9_eqGE'
+
+function mostrarPreview(input) {
+  const file = input.files[0]
+  if (!file) return
+  const reader = new FileReader()
+  reader.onload = e => {
+    const preview = document.getElementById('preview')
+    preview.src = e.target.result
+    preview.style.display = 'block'
+    document.getElementById('btnAnalisar').disabled = false
+  }
+  reader.readAsDataURL(file)
+}
+
+async function analisarMatricula() {
+  const file = document.getElementById('foto').files[0]
+  if (!file) return
+  document.getElementById('loading').style.display = 'block'
+  document.getElementById('resultado').style.display = 'none'
+  document.getElementById('erro').style.display = 'none'
+  document.getElementById('btnAnalisar').disabled = true
+  const formData = new FormData()
+  formData.append('image', file)
+  try {
+    const response = await fetch(`${SUPABASE_URL}/functions/v1/plate-reader`, {
+      method: 'POST',
+      headers: { 'Authorization': `Bearer ${SUPABASE_ANON_KEY}` },
+      body: formData
+    })
+    const data = await response.json()
+    document.getElementById('loading').style.display = 'none'
+    if (data.results && data.results.length > 0) {
+      const r = data.results[0]
+      document.getElementById('matriculaTexto').textContent = r.plate.toUpperCase()
+      document.getElementById('confianca').textContent = Math.round(r.score * 100) + '%'
+      document.getElementById('regiao').textContent = r.region?.code?.toUpperCase() || '—'
+      document.getElementById('veiculo').textContent = r.vehicle?.type || '—'
+      document.getElementById('cor').textContent = r.vehicle?.color?.[0]?.color || '—'
+      document.getElementById('resultado').style.display = 'block'
+    } else {
+      const erroDiv = document.getElementById('erro')
+      erroDiv.textContent = '⚠️ Nenhuma matrícula detectada.'
+      erroDiv.style.display = 'block'
+    }
+  } catch (err) {
+    document.getElementById('loading').style.display = 'none'
+    const erroDiv = document.getElementById('erro')
+    erroDiv.textContent = '❌ Erro: ' + String(err)
+    erroDiv.style.display = 'block'
+  }
+  document.getElementById('btnAnalisar').disabled = false
+}
+</script>
+</body>
+</html>
