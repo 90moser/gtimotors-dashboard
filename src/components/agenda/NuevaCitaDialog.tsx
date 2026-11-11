@@ -68,6 +68,10 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
   const [fecha, setFecha] = useState(fechaDefault);
   const [hora, setHora] = useState(getDefaultHora());
   const [notas, setNotas] = useState('');
+  const [otrosDescripcion, setOtrosDescripcion] = useState('');
+  const [otrosPrecio, setOtrosPrecio] = useState('');
+  const [horasOcupadas, setHorasOcupadas] = useState<string[]>([]);
+  const [isSabado, setIsSabado] = useState(false);
 
   const buscarClientePorTelefono = async (tel: string) => {
     setBuscando(true);
@@ -121,6 +125,8 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
     setVehiculoId('nuevo'); setMatricula(''); setMarca('');
     setModelo(''); setTipo('turismo'); setColor('');
     setServicioId(''); setFecha(fechaDefault); setHora(getDefaultHora()); setNotas('');
+    setOtrosDescripcion(''); setOtrosPrecio('');
+    setHorasOcupadas([]); setIsSabado(false);
 
     supabase
       .from('servicios')
@@ -135,6 +141,29 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, fechaDefault, telefonoInicial]);
+
+  const fetchHorasOcupadas = async (f: string) => {
+    const { data } = await supabase
+      .from('citas')
+      .select('hora')
+      .eq('fecha', f)
+      .neq('estado', 'cancelado');
+    setHorasOcupadas((data ?? []).map((c: { hora: string }) => String(c.hora).substring(0, 5)));
+  };
+
+  const handleFechaChange = (val: string) => {
+    if (!val) { setFecha(''); setIsSabado(false); return; }
+    const date = new Date(val + 'T12:00:00');
+    const day = date.getDay();
+    if (day === 0) {
+      toast.error('Los domingos estamos cerrados.');
+      setFecha('');
+      return;
+    }
+    setIsSabado(day === 6);
+    setFecha(val);
+    fetchHorasOcupadas(val);
+  };
 
   const buscarCliente = async () => {
     if (!telefono.trim()) { toast.error('Introduce un teléfono para buscar'); return; }
@@ -154,7 +183,22 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
     }
   };
 
+  const ALL_SLOTS = [
+    '09:00','09:30','10:00','10:30','11:00','11:30',
+    '12:00','12:30','13:00','13:30','14:00','14:30',
+    '15:00','15:30','16:00','16:30','17:00','17:30','18:00','18:30',
+  ];
+  const SAB_SLOTS = ['09:00','09:30','10:00','10:30','11:00','11:30','12:00'];
+  const slots = isSabado ? SAB_SLOTS : ALL_SLOTS;
+
+  const isOtros = servicios.find((s) => s.id === servicioId)?.nombre
+    .toLowerCase().startsWith('otros') ?? false;
+
   const getPrecioFinal = (): number | null => {
+    if (isOtros) {
+      const p = parseFloat(otrosPrecio);
+      return isNaN(p) ? null : p;
+    }
     const s = servicios.find((x) => x.id === servicioId);
     if (!s) return null;
     return { turismo: s.precio_turismo, suv: s.precio_suv, monovolumen: s.precio_monovolumen, furgoneta: s.precio_furgoneta }[tipo];
@@ -163,6 +207,14 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
   const handleSubmit = async () => {
     if (!telefono || !nombre || !apellidos || !matricula || !marca || !modelo || !servicioId || !fecha || !hora) {
       toast.error('Completa todos los campos obligatorios');
+      return;
+    }
+    if (isOtros && !otrosDescripcion.trim()) {
+      toast.error('Describe el servicio realizado');
+      return;
+    }
+    if (isOtros && (!otrosPrecio || isNaN(parseFloat(otrosPrecio)))) {
+      toast.error('Introduce el precio del servicio');
       return;
     }
     const telefonoValido = /^[679]\d{8}$/.test(telefono.replace(/\s/g, ''));
@@ -203,7 +255,9 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
         fecha, hora,
         estado: 'espera',
         precio_final: getPrecioFinal(),
-        notas: notas || null,
+        notas: isOtros
+          ? `[Otros] ${otrosDescripcion}${notas ? ' — ' + notas : ''}`
+          : notas || null,
       });
       if (error) throw error;
 
@@ -379,14 +433,53 @@ const NuevaCitaDialog = ({ open, onClose, fechaDefault, telefonoInicial }: Props
                     </Select>
                   </div>
 
+                  {isOtros && (
+                    <div className="space-y-3 p-3 bg-muted/30 rounded-lg border border-border">
+                      <div>
+                        <Label className="text-xs mb-1 block">Descripción del servicio *</Label>
+                        <Input
+                          value={otrosDescripcion}
+                          onChange={(e) => setOtrosDescripcion(e.target.value)}
+                          placeholder="Ej: Cambio de aceite sintético 5W30..."
+                        />
+                      </div>
+                      <div>
+                        <Label className="text-xs mb-1 block">Precio *</Label>
+                        <div className="relative">
+                          <Input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={otrosPrecio}
+                            onChange={(e) => setOtrosPrecio(e.target.value)}
+                            placeholder="0.00"
+                            className="pr-8"
+                          />
+                          <span className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">€</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <Label className="text-xs mb-1 block">Fecha *</Label>
-                      <Input type="date" value={fecha} onChange={(e) => setFecha(e.target.value)} />
+                      <Input type="date" value={fecha} onChange={(e) => handleFechaChange(e.target.value)} />
                     </div>
                     <div>
                       <Label className="text-xs mb-1 block">Hora *</Label>
-                      <Input type="time" value={hora} onChange={(e) => setHora(e.target.value)} />
+                      <Select value={hora} onValueChange={setHora}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Selecciona hora" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {slots.map((s) => (
+                            <SelectItem key={s} value={s} disabled={horasOcupadas.includes(s)}>
+                              {s}{horasOcupadas.includes(s) ? ' — Ocupado' : ''}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
 
