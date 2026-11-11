@@ -47,7 +47,7 @@ const LoginPage = () => {
 
   return (
     <div className="min-h-screen flex">
-      {/* Red accent line */}
+      {/* Yellow accent line */}
       <div className="hidden lg:block w-1 bg-primary flex-shrink-0" />
 
       {/* Left side - Image */}
@@ -76,7 +76,7 @@ const LoginPage = () => {
             <GTILogo size="lg" />
           </div>
           <p className="text-center text-muted-foreground text-[13px] tracking-[1px] mb-12">
-            Gestión Inteligente. Presencia Premium.
+            Lavado y Engrase · Vigo
           </p>
 
           {/* Heading */}
@@ -125,7 +125,7 @@ const LoginPage = () => {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-[52px] bg-primary text-primary-foreground font-bold rounded-lg hover:bg-[hsl(4,78%,55%)] transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
+              className="w-full h-[52px] bg-primary text-primary-foreground font-bold rounded-lg hover:bg-[hsl(50,100%,42%)] transition-colors flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <>
@@ -138,7 +138,7 @@ const LoginPage = () => {
             </button>
           </form>
 
-          <p className="text-center text-[#555555] text-xs mt-12">
+          <p className="text-center text-muted-foreground/50 text-xs mt-12">
             Acceso restringido a personal autorizado
           </p>
         </div>
