@@ -6,53 +6,69 @@
 
 @layer base {
   :root {
-    --background: 0 0% 7%;
-    --foreground: 0 0% 100%;
+    /* ── Backgrounds ───────────────────────────────────────────── */
+    --background: 220 20% 5%;           /* #090C11  main content bg    */
+    --foreground: 0 0% 100%;            /* white                        */
 
-    --card: 0 0% 16.5%;
+    --card: 220 18% 11%;                /* #161A21  --brand-surface-2  */
     --card-foreground: 0 0% 100%;
 
-    --popover: 0 0% 13.3%;
+    --popover: 220 20% 7%;              /* #0E1116  --brand-surface    */
     --popover-foreground: 0 0% 100%;
 
-    --primary: 4 64% 46%;
-    --primary-foreground: 0 0% 100%;
+    /* ── Brand primary: yellow ─────────────────────────────────── */
+    --primary: 50 100% 50%;             /* #FFD400                     */
+    --primary-foreground: 0 0% 2%;      /* #050505 dark text on yellow */
 
-    --secondary: 0 0% 13.3%;
+    /* ── Secondary / muted ────────────────────────────────────── */
+    --secondary: 220 18% 11%;
     --secondary-foreground: 0 0% 100%;
 
-    --muted: 0 0% 20%;
-    --muted-foreground: 0 0% 66.7%;
+    --muted: 220 18% 16%;
+    --muted-foreground: 220 10% 60%;    /* ~#8A909B                    */
 
-    --accent: 4 64% 46%;
+    /* ── Brand accent: blue ───────────────────────────────────── */
+    --accent: 210 100% 56%;             /* #1E90FF                     */
     --accent-foreground: 0 0% 100%;
 
-    --destructive: 4 64% 46%;
+    /* ── Destructive: red — ONLY for errors/delete ────────────── */
+    --destructive: 0 68% 47%;           /* #CC2929                     */
     --destructive-foreground: 0 0% 100%;
+    --state-danger: 0 68% 47%;
 
-    --success: 145 63% 42%;
-    --success-foreground: 0 0% 100%;
+    /* ── Success / warning ────────────────────────────────────── */
+    --success: 199 89% 60%;             /* ~#4FC3F7 aqua               */
+    --success-foreground: 0 0% 2%;
 
     --warning: 37 90% 51%;
     --warning-foreground: 0 0% 10%;
 
-    --border: 0 0% 20%;
-    --input: 0 0% 20%;
-    --ring: 4 64% 46%;
+    /* ── Borders & inputs ─────────────────────────────────────── */
+    --border: 220 18% 18%;              /* subtle blue-grey            */
+    --input: 220 18% 18%;
+    --ring: 210 100% 56%;               /* blue focus ring             */
 
     --radius: 0.5rem;
 
-    --sidebar-background: 0 0% 10%;
-    --sidebar-foreground: 0 0% 66.7%;
-    --sidebar-primary: 4 64% 46%;
-    --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 15%;
+    /* ── Sidebar ──────────────────────────────────────────────── */
+    --sidebar-background: 0 0% 2%;      /* #050505 --brand-black       */
+    --sidebar-foreground: 220 10% 65%;  /* silver                      */
+    --sidebar-primary: 50 100% 50%;     /* yellow                      */
+    --sidebar-primary-foreground: 0 0% 2%;
+    --sidebar-accent: 220 18% 11%;      /* surface-2                   */
     --sidebar-accent-foreground: 0 0% 100%;
-    --sidebar-border: 0 0% 20%;
-    --sidebar-ring: 4 64% 46%;
+    --sidebar-border: 220 18% 15%;
+    --sidebar-ring: 210 100% 56%;
 
-    --surface: 0 0% 10%;
-    --surface-elevated: 0 0% 16.5%;
+    /* ── Surface aliases ──────────────────────────────────────── */
+    --surface: 0 0% 2%;                 /* brand-black (sidebar)       */
+    --surface-elevated: 220 18% 11%;    /* brand-surface-2             */
+
+    /* ── Brand raw tokens (for JS/inline use) ─────────────────── */
+    --brand-yellow: 50 100% 50%;
+    --brand-blue: 210 100% 56%;
+    --brand-aqua: 199 89% 64%;
+    --brand-silver: 220 10% 81%;
   }
 }
 
@@ -69,6 +85,6 @@
 
 @layer utilities {
   .text-gradient-brand {
-    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[hsl(4,78%,55%)];
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary to-[hsl(50,100%,65%)];
   }
 }

@@ -52,7 +52,7 @@ const AppSidebar = ({ mobile = false, onClose }: AppSidebarProps) => {
       className={
         mobile
           ? "flex flex-col w-full min-h-screen bg-surface"
-          : "hidden md:flex flex-col w-[260px] min-h-screen bg-surface border-r border-border flex-shrink-0"
+          : "hidden md:flex flex-col w-[260px] min-h-screen bg-surface border-r border-[hsl(var(--sidebar-border))] flex-shrink-0"
       }
     >
       {/* Logo — only shown in desktop mode; mobile header is rendered by PageLayout */}
@@ -69,7 +69,7 @@ const AppSidebar = ({ mobile = false, onClose }: AppSidebarProps) => {
         </div>
         <div className="min-w-0">
           <p className="text-foreground text-sm font-semibold leading-tight truncate">
-            GTIMotors
+            RSMotors
           </p>
           <p className="text-muted-foreground text-xs truncate">
             {userEmail || "Administrador"}
@@ -109,7 +109,7 @@ const AppSidebar = ({ mobile = false, onClose }: AppSidebarProps) => {
       <div className="px-3 pb-6">
         <button
           onClick={handleSignOut}
-          className="w-full flex items-center gap-3 h-11 px-3 rounded-lg text-sm text-[#555555] hover:text-muted-foreground hover:bg-muted/20 transition-colors"
+          className="w-full flex items-center gap-3 h-11 px-3 rounded-lg text-sm text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted/20 transition-colors"
         >
           <LogOut className="h-[18px] w-[18px]" />
           <span>Cerrar sesión</span>

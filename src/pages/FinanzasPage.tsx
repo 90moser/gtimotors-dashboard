@@ -12,7 +12,7 @@ import { supabase, type Cita } from "@/lib/supabaseClient";
 
 type Periodo = "mes" | "trimestre" | "anio";
 
-const PIE_COLORS = ["#CC0000", "#444444", "#666666", "#888888", "#aaaaaa"];
+const PIE_COLORS = ["#FFD400", "#1E90FF", "#4FC3F7", "#C9CED6", "#555E6B"];
 
 const PERIODOS: { key: Periodo; label: string }[] = [
   { key: "mes",       label: "Este Mes" },
@@ -176,7 +176,7 @@ const FinanzasPage = () => {
                   formatter={(v: number) => [`${v.toFixed(2)} €`, "Ingresos"]}
                   contentStyle={tooltipStyle}
                 />
-                <Bar dataKey="total" fill="#CC0000" radius={[4, 4, 0, 0]} />
+                <Bar dataKey="total" fill="#FFD400" radius={[4, 4, 0, 0]} />
               </BarChart>
             </ResponsiveContainer>
           )}

@@ -19,10 +19,10 @@ import { cn } from '@/lib/utils';
 // ── Configuración de estados ────────────────────────────────────────────────
 
 const ESTADO_CONFIG: Record<EstadoCita, { label: string; color: string; border: string }> = {
-  espera:    { label: 'En espera', color: 'bg-amber-500/20 text-amber-500',     border: 'border-l-amber-500' },
-  lavando:   { label: 'Lavando',   color: 'bg-blue-500/20 text-blue-500',       border: 'border-l-blue-500' },
-  listo:     { label: 'Listo',     color: 'bg-emerald-500/20 text-emerald-500', border: 'border-l-emerald-500' },
-  cancelado: { label: 'Cancelado', color: 'bg-muted text-muted-foreground',     border: 'border-l-border' },
+  espera:    { label: 'En espera', color: 'bg-muted/60 text-muted-foreground',   border: 'border-l-muted-foreground/40' },
+  lavando:   { label: 'Lavando',   color: 'bg-blue-500/20 text-blue-400',        border: 'border-l-blue-400' },
+  listo:     { label: 'Listo',     color: 'bg-yellow-400/20 text-yellow-400',    border: 'border-l-yellow-400' },
+  cancelado: { label: 'Cancelado', color: 'bg-muted/30 text-muted-foreground/50', border: 'border-l-border' },
 };
 
 const NEXT_ESTADO: Partial<Record<EstadoCita, { estado: EstadoCita; label: string }>> = {
