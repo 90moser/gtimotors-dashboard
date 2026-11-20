@@ -25,3 +25,9 @@ dist-ssr
 
 # Supabase
 supabase/.temp/
+
+# Generated icons (produced by scripts/generate-icons.cjs at build time)
+public/apple-touch-icon.png
+public/favicon-32x32.png
+public/icon-192.png
+public/icon-512.png
