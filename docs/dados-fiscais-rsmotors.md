@@ -7,8 +7,8 @@
 | Razón social     | Jesus Ricardo Camacho Rodriguez    |
 | NIF              | 07181923N                          |
 | Nombre comercial | RSMotors                           |
-| Domicilio        | Travesía de Vigo, 105              |
-| Código postal    | **TODO: confirmar CP fiscal**      |
+| Domicilio        | Travesía de Vigo, 105 Bajo         |
+| Código postal    | 36205                              |
 | Ciudad           | Vigo                               |
 | Provincia        | Pontevedra                         |
 | Teléfono         | 986 13 75 76                       |
@@ -29,7 +29,7 @@ supabase/migrations/20261120000000_negocio_emisor.sql
 ### Passos (já incluídos no ficheiro)
 
 1. **Tabela `negocio`** — config white-label de uma linha, com RLS para autenticados
-2. **INSERT RSMotors** — insere os dados acima (actualizar `domicilio` com CP quando confirmado)
+2. **INSERT RSMotors** — insere os dados completos: `domicilio = 'Travesía de Vigo, 105 Bajo'`, `codigo_postal = '36205'`
 3. **Colunas snapshot em `facturas`** — `emisor_razon_social`, `emisor_nombre_comercial`, `emisor_nif`, `emisor_domicilio`, `serie`
 4. **Backfill GTI** — preenche facturas existentes com dados da GTIMotors 2020 SLU (`serie = 'GTI'`)
 5. **Tabela `series_contadores`** + seed contador GTI — numeração atómica sem buracos
@@ -64,7 +64,7 @@ As Edge Functions **não têm deploy automático**. Copia o conteúdo do ficheir
 **Alterações:**
 - `GTIMotors` → `RSMotors` (linha do título da mensagem)
 - `698 191 512` → `665 05 86 33` (linha de telefone)
-- `Travesia de Vigo 105 Bajo, Vigo` → `Travesía de Vigo, 105, Vigo` (TODO: adicionar CP)
+- `Travesia de Vigo 105 Bajo, Vigo` → `Travesía de Vigo, 105 Bajo, 36205 Vigo (Pontevedra)`
 
 ### `whatsapp-confirmacion`
 
@@ -111,8 +111,4 @@ O PDF usa **sempre** as colunas `emisor_*` da própria factura, nunca a configur
 
 ## 5. TODOs
 
-- [ ] **CP fiscal:** confirmar código postal do domicílio fiscal (`Travesía de Vigo, 105`) e actualizar:
-  - Tabela `negocio`: `UPDATE negocio SET codigo_postal = 'XXXXX' WHERE id = ...`
-  - `supabase/functions/whatsapp-recordatorio/index.ts`: adicionar CP na linha da morada
 - [ ] **Deploy Edge Functions:** copiar `whatsapp-recordatorio/index.ts` actualizado para o Dashboard do Supabase
-- [ ] **Domicílio completo:** confirmar se o domicílio fiscal é Travesía de Vigo, 105 Bajo ou outro

@@ -10,8 +10,8 @@ CREATE TABLE IF NOT EXISTS negocio (
   razon_social     TEXT NOT NULL,
   nombre_comercial TEXT NOT NULL,
   nif              TEXT NOT NULL,
-  domicilio        TEXT NOT NULL,   -- rua + número (sem CP — ver TODO abaixo)
-  codigo_postal    TEXT,            -- TODO: confirmar CP do domicílio fiscal
+  domicilio        TEXT NOT NULL,
+  codigo_postal    TEXT,
   ciudad           TEXT NOT NULL DEFAULT 'Vigo',
   provincia        TEXT NOT NULL DEFAULT 'Pontevedra',
   telefono         TEXT,
@@ -31,17 +31,17 @@ CREATE POLICY "negocio_authed" ON negocio
   WITH CHECK (true);
 
 -- Insere dados RSMotors
--- TODO: actualizar domicilio com CP quando confirmado pelo titular
 INSERT INTO negocio (
   razon_social, nombre_comercial, nif,
-  domicilio, ciudad, provincia,
+  domicilio, codigo_postal, ciudad, provincia,
   telefono, whatsapp, instagram,
   logo_url, serie_factura
 ) VALUES (
   'Jesus Ricardo Camacho Rodriguez',
   'RSMotors',
   '07181923N',
-  'Travesía de Vigo, 105',   -- TODO: adicionar código postal quando confirmado
+  'Travesía de Vigo, 105 Bajo',
+  '36205',
   'Vigo',
   'Pontevedra',
   '986 13 75 76',

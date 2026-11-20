@@ -62,7 +62,7 @@ serve(async (req) => {
       `${servicio ? `🔧 *Servicio:* ${servicio}\n` : ''}` +
       `📅 *Fecha:* ${fecha}\n` +
       `🕐 *Hora:* ${hora}\n\n` +
-      `📍 Travesía de Vigo, 105, Vigo\n` + // TODO: añadir CP cuando esté confirmado
+      `📍 Travesía de Vigo, 105 Bajo, 36205 Vigo (Pontevedra)\n` +
       `📞 986 13 75 76 · 665 05 86 33\n\n` +
       `Si necesitas cancelar o cambiar la cita, llámanos. ¡Hasta mañana! 🚗`;
 
