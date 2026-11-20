@@ -81,6 +81,24 @@ export interface Cita {
   servicios?: Servicio;
 }
 
+export interface Negocio {
+  id: string;
+  razon_social: string;
+  nombre_comercial: string;
+  nif: string;
+  domicilio: string;
+  codigo_postal?: string;
+  ciudad: string;
+  provincia: string;
+  telefono?: string;
+  whatsapp?: string;
+  instagram?: string;
+  logo_url?: string;
+  serie_factura: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export interface Factura {
   id: string;
   numero: string;
@@ -93,6 +111,12 @@ export interface Factura {
   pdf_url?: string;
   fecha_emision: string;
   created_at: string;
+  // Snapshot del emisor en el momento de la emisión — nunca cambiar tras emitir
+  emisor_razon_social?: string | null;
+  emisor_nombre_comercial?: string | null;
+  emisor_nif?: string | null;
+  emisor_domicilio?: string | null;
+  serie?: string | null;
   clientes?: Cliente;
   citas?: Cita;
 }

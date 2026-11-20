@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Settings, Building2, Edit2, Loader2 } from "lucide-react";
+import { Settings, Building2, Edit2, Loader2, AlertCircle } from "lucide-react";
+import { useNegocio } from "@/hooks/useNegocio";
 import PageLayout from "@/components/PageLayout";
 import { Button } from "@/components/ui/button";
 import {
@@ -50,6 +51,7 @@ const BLANK_FORM: ServicioForm = {
 };
 
 const ConfiguracionPage = () => {
+  const { negocio, loading: negocioLoading, error: negocioError } = useNegocio();
   const [servicios, setServicios] = useState<Servicio[]>([]);
   const [loading, setLoading] = useState(true);
   const [editando, setEditando] = useState<Servicio | null>(null);
@@ -122,18 +124,48 @@ const ConfiguracionPage = () => {
             <Building2 className="h-5 w-5 text-muted-foreground" />
             <h2 className="font-semibold text-foreground">Datos del Negocio</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-            {[
-              { label: "Razón Social", value: "GTIMotors 2020 SLU" },
-              { label: "NIF",          value: "B23860984" },
-              { label: "Ubicación",    value: "Vigo, España" },
-            ].map(({ label, value }) => (
-              <div key={label}>
-                <p className="text-xs text-muted-foreground mb-1">{label}</p>
-                <p className="text-sm font-medium text-foreground">{value}</p>
-              </div>
-            ))}
-          </div>
+
+          {negocioLoading ? (
+            <div className="flex justify-center py-6">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : negocioError ? (
+            <div className="flex items-center gap-2 text-destructive text-sm">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              <span>Error al cargar los datos del negocio: {negocioError}</span>
+            </div>
+          ) : negocio ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+              {[
+                { label: "Razón Social",       value: negocio.razon_social },
+                { label: "Nombre Comercial",   value: negocio.nombre_comercial },
+                { label: "NIF",                value: negocio.nif },
+                {
+                  label: "Domicilio",
+                  value: negocio.codigo_postal
+                    ? `${negocio.domicilio}, ${negocio.codigo_postal} ${negocio.ciudad} (${negocio.provincia})`
+                    : `${negocio.domicilio}, ${negocio.ciudad} (${negocio.provincia})`,
+                  note: !negocio.codigo_postal ? "⚠ CP pendiente de confirmar" : undefined,
+                },
+                { label: "Teléfono",    value: negocio.telefono   ?? "—" },
+                { label: "WhatsApp",    value: negocio.whatsapp   ?? "—" },
+                { label: "Instagram",   value: negocio.instagram  ?? "—" },
+                { label: "Serie facturas", value: negocio.serie_factura },
+              ].map(({ label, value, note }) => (
+                <div key={label}>
+                  <p className="text-xs text-muted-foreground mb-1">{label}</p>
+                  <p className="text-sm font-medium text-foreground">{value}</p>
+                  {note && (
+                    <p className="text-xs text-amber-500 mt-0.5">{note}</p>
+                  )}
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-sm text-muted-foreground">
+              No hay datos del negocio configurados. Ejecuta la migración SQL.
+            </p>
+          )}
         </div>
 
         {/* Catálogo de Servicios */}

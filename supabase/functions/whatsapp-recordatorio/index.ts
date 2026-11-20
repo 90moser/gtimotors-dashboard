@@ -56,14 +56,14 @@ serve(async (req) => {
     const to       = `whatsapp:+${toNumber}`;
 
     const msgBody =
-      `⏰ *Recordatorio de cita — GTIMotors*\n\n` +
+      `⏰ *Recordatorio de cita — RSMotors*\n\n` +
       `Hola ${nombre} 👋\n\n` +
       `Te recordamos que mañana tienes una cita:\n\n` +
       `${servicio ? `🔧 *Servicio:* ${servicio}\n` : ''}` +
       `📅 *Fecha:* ${fecha}\n` +
       `🕐 *Hora:* ${hora}\n\n` +
-      `📍 Travesia de Vigo 105 Bajo, Vigo\n` +
-      `📞 986 13 75 76 · 698 191 512\n\n` +
+      `📍 Travesía de Vigo, 105, Vigo\n` + // TODO: añadir CP cuando esté confirmado
+      `📞 986 13 75 76 · 665 05 86 33\n\n` +
       `Si necesitas cancelar o cambiar la cita, llámanos. ¡Hasta mañana! 🚗`;
 
     const params = new URLSearchParams({ From: TWILIO_FROM, To: to, Body: msgBody });

@@ -29,6 +29,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useFaturas } from "@/hooks/useFaturas";
+import { useNegocio } from "@/hooks/useNegocio";
 import { supabase, type Cita, type Cliente, type Factura } from "@/lib/supabaseClient";
 import { toast } from "sonner";
 
@@ -53,6 +54,8 @@ const filtros: { key: FiltroEstado; label: string }[] = [
 ];
 
 const FacturacionPage = () => {
+  const { negocio, logoDataUrl } = useNegocio();
+
   const {
     facturas,
     loading,
@@ -105,12 +108,23 @@ const FacturacionPage = () => {
     setCitaSeleccionada(citasDisponibles.find((c) => c.id === citaId) ?? null);
   };
 
+  const pdfOpts = {
+    logoDataUrl,
+    telefono:  negocio?.telefono,
+    whatsapp:  negocio?.whatsapp,
+    instagram: negocio?.instagram,
+  };
+
   const handleCrearFactura = async () => {
     if (!citaSeleccionada) return;
+    if (!negocio) {
+      toast.error("Datos del negocio no cargados. Recarga la página.");
+      return;
+    }
     setCreando(true);
     try {
-      const nuevaFactura = await createFactura(citaSeleccionada.id);
-      generatePDF(nuevaFactura);
+      const nuevaFactura = await createFactura(citaSeleccionada.id, negocio);
+      generatePDF(nuevaFactura, pdfOpts);
       toast.success(`Factura ${nuevaFactura.numero} creada y descargada`);
       handleDialogOpenChange(false);
       await fetchFacturas();
@@ -199,12 +213,16 @@ const FacturacionPage = () => {
 
   const handleCrearMensual = async () => {
     if (!clienteMensual || seleccionadas.size === 0) return;
+    if (!negocio) {
+      toast.error("Datos del negocio no cargados. Recarga la página.");
+      return;
+    }
     setCreandoMensual(true);
     try {
       const citaIds = Array.from(seleccionadas);
-      const nuevaFactura = await createFacturaMensal(clienteMensual.id, citaIds);
+      const nuevaFactura = await createFacturaMensal(clienteMensual.id, citaIds, negocio);
       const citasSelec = citasMensual.filter((c) => seleccionadas.has(c.id));
-      generatePDFMensal(nuevaFactura, citasSelec);
+      generatePDFMensal(nuevaFactura, citasSelec, pdfOpts);
       toast.success(`Factura mensual ${nuevaFactura.numero} creada y descargada`);
       handleDialogMensualOpenChange(false);
       await fetchFacturas();
@@ -329,7 +347,7 @@ const FacturacionPage = () => {
                       <Button
                         variant="ghost"
                         size="sm"
-                        onClick={() => generatePDF(factura)}
+                        onClick={() => generatePDF(factura, pdfOpts)}
                         title="Descargar PDF"
                       >
                         <Download className="h-4 w-4" />
