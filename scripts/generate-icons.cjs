@@ -1,5 +1,5 @@
 /**
- * Generates PWA icons and favicon-32x32.png from public/rsmotors-logo.png.
+ * Generates PWA icons, favicon-32x32.png, and favicon.ico from source assets.
  * Run automatically via "prebuild" in package.json.
  * Requires: npm install --save-dev sharp
  */
@@ -11,9 +11,48 @@ const SRC_LOGO  = path.join(__dirname, '..', 'public', 'rsmotors-logo.png');
 const SRC_SVG   = path.join(__dirname, '..', 'public', 'favicon.svg');
 const OUT_DIR   = path.join(__dirname, '..', 'public');
 
+async function buildIco(sizes, svgPath) {
+  const pngBuffers = await Promise.all(
+    sizes.map(size =>
+      sharp(svgPath, { density: 300 }).resize(size, size).png().toBuffer()
+    )
+  );
+  const headerSize = 6;
+  const dirEntrySize = 16;
+  let offset = headerSize + sizes.length * dirEntrySize;
+  const dirEntries = pngBuffers.map((buf, i) => {
+    const w = sizes[i] >= 256 ? 0 : sizes[i];
+    const entry = Buffer.alloc(16);
+    entry.writeUInt8(w, 0);
+    entry.writeUInt8(w, 1);
+    entry.writeUInt8(0, 2);
+    entry.writeUInt8(0, 3);
+    entry.writeUInt16LE(1, 4);
+    entry.writeUInt16LE(32, 6);
+    entry.writeUInt32LE(buf.length, 8);
+    entry.writeUInt32LE(offset, 12);
+    offset += buf.length;
+    return entry;
+  });
+  const header = Buffer.alloc(6);
+  header.writeUInt16LE(0, 0);
+  header.writeUInt16LE(1, 2);
+  header.writeUInt16LE(sizes.length, 4);
+  return Buffer.concat([header, ...dirEntries, ...pngBuffers]);
+}
+
 async function main() {
+  // favicon.ico from SVG (always generated, no logo required)
+  try {
+    const icoBuffer = await buildIco([16, 32, 48], SRC_SVG);
+    fs.writeFileSync(path.join(OUT_DIR, 'favicon.ico'), icoBuffer);
+    console.log('[generate-icons] favicon.ico');
+  } catch (e) {
+    console.warn('[generate-icons] Could not generate favicon.ico:', e.message);
+  }
+
   if (!fs.existsSync(SRC_LOGO)) {
-    console.warn('[generate-icons] rsmotors-logo.png not found — skipping icon generation');
+    console.warn('[generate-icons] rsmotors-logo.png not found — skipping PNG icon generation');
     return;
   }
 
